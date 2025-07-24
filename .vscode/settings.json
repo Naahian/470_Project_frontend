@@ -1,0 +1,20 @@
+{
+    "files.exclude": {
+        ".dart_tool": true,
+        ".idea": true,
+        "android": true,
+        "ios": true,
+        "linux": true,
+        "macos": true,
+        "web": true,
+        "windows": true,
+        "_470_project_frontend.iml": true,
+        ".flutter-plugins-dependencies": true,
+        ".gitignore": true,
+        ".metadata": true,
+        "analysis_options.yaml": true,
+        "pubspec.lock": true,
+        "README.md": true,
+        ".vscode": true
+    }
+}
