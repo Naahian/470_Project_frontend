@@ -15,6 +15,7 @@
         "analysis_options.yaml": true,
         "pubspec.lock": true,
         "README.md": true,
-        ".vscode": true
+        ".vscode": true,
+        "inventory_management_app.iml": true
     }
 }

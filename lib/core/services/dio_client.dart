@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:inventory_management_app/core/constants.dart';
-import 'package:inventory_management_app/core/services/auth_service.dart';
+import 'package:inventory_management_app/features/auth/auth_service.dart';
 
 class DioClient {
   late final Dio _dio;
@@ -18,17 +18,17 @@ class DioClient {
       ),
     );
 
-    // _dio.interceptors.add(
-    //   InterceptorsWrapper(
-    //     onRequest: (options, handler) async {
-    //       String token = await AuthService.instance.getToken();
-    //       if (token.isNotEmpty) {
-    //         options.headers['Authorization'] = 'Bearer $token';
-    //       }
-    //       return handler.next(options);
-    //     },
-    //   ),
-    // );
+    _dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) async {
+          String token = await AuthService.instance.getToken();
+          if (token.isNotEmpty) {
+            options.headers['Authorization'] = 'Bearer $token';
+          }
+          return handler.next(options);
+        },
+      ),
+    );
 
     _dio.interceptors.add(LogInterceptor(responseBody: true));
   }

@@ -1,4 +1,4 @@
 export 'auth_controller.dart';
 export 'auth_model.dart';
-export 'auth_repo.dart';
+export 'auth_service.dart';
 export 'screens/screens.dart';

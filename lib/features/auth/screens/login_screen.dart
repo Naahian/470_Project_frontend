@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:inventory_management_app/core/services/auth_service.dart';
+import 'package:inventory_management_app/features/auth/auth_service.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -34,9 +34,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
     setState(() => _isLoading = false);
 
-    if (response.isNotEmpty && mounted) {
-      context.go("/home");
-    } else if (response.isEmpty && mounted) {
+    if (response == null && mounted) {
+      context.go("/");
+    } else if (response != null && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Login failed: $response'),
@@ -124,7 +124,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
                 const SizedBox(height: 16),
                 TextButton(
-                  onPressed: () => context.push("/signup"),
+                  onPressed: () => context.go("/signup"),
                   child: const Text("Don't have an account? Sign up"),
                 ),
               ],
