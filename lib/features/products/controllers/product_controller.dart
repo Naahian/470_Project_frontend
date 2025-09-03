@@ -1,115 +1,168 @@
-import 'package:flutter/material.dart';
+// product_state.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:inventory_management_app/features/products/models/product_model.dart';
-import 'product_repo.dart';
+import 'package:inventory_management_app/features/products/models/product_service.dart';
+import 'package:inventory_management_app/features/products/models/viewmodels.dart';
+import '../models/product_model.dart';
 
-class ProductController extends StateNotifier<AsyncValue<List<ProductModel>>> {
-  final ProductRepository repository;
+class ProductState {
+  final List<ProductModel> products;
+  final List<ProductModel> selectedProducts;
+  final bool isLoading;
+  final Object? error;
+  final StackTrace? stackTrace;
+  final String searchQuery;
+  final String? selectedCategory;
+  final String? selectedSupplier;
 
-  String _searchQuery = '';
-  String? _selectedCategory;
-  String? _selectedSupplier;
+  const ProductState({
+    required this.selectedProducts,
+    this.products = const [],
+    this.isLoading = false,
+    this.error,
+    this.stackTrace,
+    this.searchQuery = '',
+    this.selectedCategory,
+    this.selectedSupplier,
+  });
 
-  String get searchQuery => _searchQuery;
-  String? get selectedCategory => _selectedCategory;
-  String? get selectedSupplier => _selectedSupplier;
-
-  List<String> get categories =>
-      state.asData?.value.map((p) => p.categoryName).toSet().toList() ?? [];
-
-  List<String> get suppliers =>
-      state.asData?.value.map((p) => p.supplierName).toSet().toList() ?? [];
-
-  List<String> get brands =>
-      state.asData?.value.map((p) => p.categoryName).toSet().toList() ?? [];
+  ProductState copyWith({
+    List<ProductModel>? products,
+    List<ProductModel>? selectedProducts,
+    bool? isLoading,
+    Object? error,
+    StackTrace? stackTrace,
+    String? searchQuery,
+    String? selectedCategory,
+    String? selectedSupplier,
+  }) {
+    return ProductState(
+      products: products ?? this.products,
+      selectedProducts: selectedProducts ?? this.selectedProducts,
+      isLoading: isLoading ?? this.isLoading,
+      error: error ?? this.error,
+      stackTrace: stackTrace ?? this.stackTrace,
+      searchQuery: searchQuery ?? this.searchQuery,
+      selectedCategory: selectedCategory ?? this.selectedCategory,
+      selectedSupplier: selectedSupplier ?? this.selectedSupplier,
+    );
+  }
 
   List<ProductModel> get filteredProducts {
-    final products = state.asData?.value ?? [];
     return products.where((product) {
       final matchesSearch =
-          _searchQuery.isEmpty || product.id.toString().contains(_searchQuery);
+          searchQuery.isEmpty || product.id.toString().contains(searchQuery);
       final matchesCategory =
-          _selectedCategory == null ||
-          product.categoryName == _selectedCategory;
+          selectedCategory == null || product.categoryName == selectedCategory;
       final matchesSupplier =
           selectedSupplier == null || product.supplierName == selectedSupplier;
-      return matchesSearch && matchesSupplier && matchesCategory;
+      return matchesSearch && matchesCategory && matchesSupplier;
     }).toList();
   }
 
-  ProductController(this.repository) : super(const AsyncValue.loading()) {
-    fetchAllProducts();
+  bool get hasError => error != null;
+}
+
+//CONTROLLER
+class ProductController extends StateNotifier<ProductState> {
+  final ProductService productService = ProductService();
+
+  ProductController() : super(ProductState(selectedProducts: []));
+
+  List<DropdownModel> get categories {
+    final uniqueCategories = <String, DropdownModel>{};
+
+    for (final product in state.products) {
+      uniqueCategories[product.categoryName] = DropdownModel(
+        name: product.categoryName,
+        id: product.categoryId,
+      );
+    }
+
+    return uniqueCategories.values.toList()
+      ..sort((a, b) => a.name.compareTo(b.name));
+  }
+
+  List<DropdownModel> get suppliers {
+    final uniqueSuppliers = <int, DropdownModel>{};
+
+    for (final product in state.products) {
+      uniqueSuppliers[product.supplierId] = DropdownModel(
+        name: product.supplierName,
+        id: product.supplierId,
+      );
+    }
+
+    return uniqueSuppliers.values.toList()
+      ..sort((a, b) => a.name.compareTo(b.name));
   }
 
   Future<void> fetchAllProducts() async {
-    state = const AsyncValue.loading();
+    state = state.copyWith(isLoading: true, error: null);
     try {
-      final products = await repository.fetchProducts();
-      state = AsyncValue.data(products);
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
-    }
-  }
+      final result = await productService.getAllProducts();
+      final List<ProductModel> products = result
+          .map<ProductModel>((product) => ProductModel.fromJson(product))
+          .toList();
 
-  Future<void> addProduct(ProductModel product) async {
-    try {
-      await repository.addProduct(product);
-      await fetchAllProducts();
+      state = state.copyWith(
+        products: products,
+        isLoading: false,
+        error: null,
+        stackTrace: null,
+      );
     } catch (e, st) {
-      state = AsyncValue.error(e, st);
+      state = state.copyWith(isLoading: false, error: e, stackTrace: st);
     }
   }
 
   Future<void> deleteProduct(String id) async {
     try {
-      await repository.deleteProduct(id);
+      await productService.deleteProduct(id);
       await fetchAllProducts();
     } catch (e, st) {
-      state = AsyncValue.error(e, st);
+      state = state.copyWith(error: e, stackTrace: st);
     }
   }
 
-  // Update methods for filters
   void updateSearchQuery(String query) {
-    _searchQuery = query;
-    // Force rebuild by creating new AsyncValue with same data
-    final currentData = state.asData?.value;
-    if (currentData != null) {
-      state = AsyncValue.data(List<ProductModel>.from(currentData));
-    }
+    state = state.copyWith(searchQuery: query);
   }
 
   void updateCategoryFilter(String? category) {
-    _selectedCategory = category;
-    // Force rebuild by creating new AsyncValue with same data
-    final currentData = state.asData?.value;
-    if (currentData != null) {
-      state = AsyncValue.data(List<ProductModel>.from(currentData));
-    }
+    state = state.copyWith(selectedCategory: category);
   }
 
   void updateSupplierFilter(String? supplier) {
-    _selectedSupplier = supplier;
-    // Force rebuild by creating new AsyncValue with same data
-    final currentData = state.asData?.value;
-    if (currentData != null) {
-      state = AsyncValue.data(List<ProductModel>.from(currentData));
-    }
+    state = state.copyWith(selectedSupplier: supplier);
   }
 
   void clearFilters() {
-    _searchQuery = '';
-    _selectedCategory = null;
-    _selectedSupplier = null;
-    // Force rebuild by creating new AsyncValue with same data
-    final currentData = state.asData?.value;
-    if (currentData != null) {
-      state = AsyncValue.data(List<ProductModel>.from(currentData));
-    }
+    state = state.copyWith(
+      searchQuery: '',
+      selectedCategory: null,
+      selectedSupplier: null,
+    );
+    fetchAllProducts(); // Refresh with all products
+  }
+
+  void selectProduct(ProductModel product) {
+    List<ProductModel> selectedProducts = List<ProductModel>.from(
+      state.selectedProducts,
+    );
+    selectedProducts.add(product);
+    state = state.copyWith(selectedProducts: selectedProducts);
+  }
+
+  void unselectProduct(ProductModel product) {
+    List<ProductModel> selectedProducts = List<ProductModel>.from(
+      state.selectedProducts,
+    );
+    selectedProducts.remove(product);
+    state = state.copyWith(selectedProducts: selectedProducts);
   }
 }
 
 final productControllerProvider =
-    StateNotifierProvider<ProductController, AsyncValue<List<ProductModel>>>(
-      (ref) => ProductController(ref.read(productRepositoryProvider)),
+    StateNotifierProvider<ProductController, ProductState>(
+      (ref) => ProductController(),
     );

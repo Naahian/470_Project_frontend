@@ -4,7 +4,7 @@ import 'package:inventory_management_app/core/widgets/bottomnavbar.dart';
 import 'package:inventory_management_app/features/category/controllers/category_controller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'widgets/widgets.dart';
+import '../widgets/widgets.dart';
 
 class CategoryScreen extends ConsumerWidget {
   CategoryScreen({Key? key}) : super(key: key);
@@ -14,20 +14,29 @@ class CategoryScreen extends ConsumerWidget {
     final categoryState = ref.watch(categoryControllerProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Categories'), centerTitle: true),
-      body: Stack(
-        children: [
-          _bgIcon1(),
-          _bgIcon2(),
-          Padding(
-            padding: const EdgeInsets.all(25),
-            child: categoryState.when(
-              data: _buildCategories,
-              loading: _buildLoaing,
-              error: (err, st) => Center(child: Text("ERROR: ${err}")),
-            ),
+      appBar: _buildAppbar(),
+      body: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Colors.white, Pallete.background],
           ),
-        ],
+        ),
+        child: Stack(
+          children: [
+            _bgIcon1(),
+            _bgIcon2(),
+            Padding(
+              padding: const EdgeInsets.all(25),
+              child: categoryState.when(
+                data: _buildCategories,
+                loading: _buildLoaing,
+                error: (err, st) => Center(child: Text("ERROR: ${err}")),
+              ),
+            ),
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Pallete.primary,
@@ -41,6 +50,15 @@ class CategoryScreen extends ConsumerWidget {
     );
   }
 
+  AppBar _buildAppbar() {
+    return AppBar(
+      title: const Text('CATEGORY'),
+      foregroundColor: Colors.white,
+      centerTitle: true,
+      backgroundColor: Pallete.primary,
+    );
+  }
+
   Widget? _buildLoaing() => const Center(child: CircularProgressIndicator());
 
   Widget? _buildCategories(categories) => ListView.builder(
@@ -48,7 +66,7 @@ class CategoryScreen extends ConsumerWidget {
     itemBuilder: (context, index) {
       return Padding(
         padding: const EdgeInsets.only(bottom: 15),
-        child: CategoryTile(category: categories[index]),
+        child: CategoryTile(category: categories[index], delivered: false),
       );
     },
   );

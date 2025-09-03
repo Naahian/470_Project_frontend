@@ -1,65 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:inventory_management_app/features/auth/auth_service.dart';
+import 'package:inventory_management_app/features/auth/controllers/signup_controller.dart';
 
-class SignupScreen extends ConsumerStatefulWidget {
+class SignupScreen extends ConsumerWidget {
   const SignupScreen({super.key});
 
   @override
-  ConsumerState<SignupScreen> createState() => _SignupScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final signupState = ref.watch(signupControllerProvider);
+    final signupController = ref.read(signupControllerProvider.notifier);
 
-class _SignupScreenState extends ConsumerState<SignupScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _usernameController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
-  bool _isObscured = true;
-  bool _isConfirmObscured = true;
-  bool _isLoading = false;
+    // Listen to state changes and show error messages or navigate on success
+    ref.listen<SignupState>(signupControllerProvider, (previous, current) {
+      if (current.errorMessage != null &&
+          current.errorMessage != previous?.errorMessage) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(current.errorMessage!),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    });
 
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _usernameController.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
-    _confirmPasswordController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _signup() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    setState(() => _isLoading = true);
-    final response = await AuthService.instance.register(
-      _usernameController.value.text,
-      _nameController.value.text,
-      _emailController.value.text,
-      _passwordController.value.text,
-    );
-    setState(() => _isLoading = false);
-
-    if (response != null && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(response), backgroundColor: Colors.red),
-      );
-    } else {
-      context.go('/login');
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
           child: Form(
-            key: _formKey,
+            key: signupController.formKey,
             child: SingleChildScrollView(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -74,25 +44,32 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 40),
-                  buildNameInput(),
+                  _buildNameInput(signupController),
                   const SizedBox(height: 16),
-                  buildUsernameInput(),
+                  _buildUsernameInput(signupController),
                   const SizedBox(height: 16),
-                  buildEmailInput(),
+                  _buildEmailInput(signupController),
                   const SizedBox(height: 16),
-                  buildPasswordInput(),
+                  _buildPasswordInput(signupController, signupState),
                   const SizedBox(height: 16),
-                  buildConfirmPasswordInput(),
+                  _buildConfirmPasswordInput(signupController, signupState),
                   const SizedBox(height: 24),
                   ElevatedButton(
-                    onPressed: _isLoading ? null : _signup,
+                    onPressed: signupState.isLoading
+                        ? null
+                        : () async {
+                            final success = await signupController.signup();
+                            if (success && context.mounted) {
+                              context.go('/login');
+                            }
+                          },
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child: _isLoading
+                    child: signupState.isLoading
                         ? const CircularProgressIndicator()
                         : const Text('Sign Up', style: TextStyle(fontSize: 16)),
                   ),
@@ -110,114 +87,88 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     );
   }
 
-  Widget buildNameInput() {
+  Widget _buildNameInput(SignupController controller) {
     return TextFormField(
-      controller: _nameController,
+      controller: controller.nameController,
       decoration: const InputDecoration(
         labelText: 'Full Name',
         prefixIcon: Icon(Icons.person),
         border: OutlineInputBorder(),
       ),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please enter your full name';
-        }
-        return null;
-      },
+      validator: controller.validateName,
+      onChanged: (_) => controller.clearError(),
     );
   }
 
-  Widget buildUsernameInput() {
+  Widget _buildUsernameInput(SignupController controller) {
     return TextFormField(
-      controller: _usernameController,
+      controller: controller.usernameController,
       decoration: const InputDecoration(
         labelText: 'Username',
         prefixIcon: Icon(Icons.account_circle),
         border: OutlineInputBorder(),
       ),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please enter a username';
-        }
-        if (value.length < 3) {
-          return 'Username must be at least 3 characters';
-        }
-        return null;
-      },
+      validator: controller.validateUsername,
+      onChanged: (_) => controller.clearError(),
     );
   }
 
-  Widget buildEmailInput() {
+  Widget _buildEmailInput(SignupController controller) {
     return TextFormField(
-      controller: _emailController,
+      controller: controller.emailController,
       keyboardType: TextInputType.emailAddress,
       decoration: const InputDecoration(
         labelText: 'Email',
         prefixIcon: Icon(Icons.email),
         border: OutlineInputBorder(),
       ),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please enter your email';
-        }
-        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-          return 'Please enter a valid email';
-        }
-        return null;
-      },
+      validator: controller.validateEmail,
+      onChanged: (_) => controller.clearError(),
     );
   }
 
-  Widget buildPasswordInput() {
+  Widget _buildPasswordInput(SignupController controller, SignupState state) {
     return TextFormField(
-      controller: _passwordController,
-      obscureText: _isObscured,
+      controller: controller.passwordController,
+      obscureText: state.isPasswordObscured,
       decoration: InputDecoration(
         labelText: 'Password',
         prefixIcon: const Icon(Icons.lock),
         border: const OutlineInputBorder(),
         suffixIcon: IconButton(
-          onPressed: () => setState(() => _isObscured = !_isObscured),
-          icon: Icon(_isObscured ? Icons.visibility : Icons.visibility_off),
+          onPressed: controller.togglePasswordVisibility,
+          icon: Icon(
+            state.isPasswordObscured ? Icons.visibility : Icons.visibility_off,
+          ),
         ),
       ),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please enter a password';
-        }
-        if (value.length < 6) {
-          return 'Password must be at least 6 characters';
-        }
-        return null;
-      },
+      validator: controller.validatePassword,
+      onChanged: (_) => controller.clearError(),
     );
   }
 
-  Widget buildConfirmPasswordInput() {
+  Widget _buildConfirmPasswordInput(
+    SignupController controller,
+    SignupState state,
+  ) {
     return TextFormField(
-      controller: _confirmPasswordController,
-      obscureText: _isConfirmObscured,
+      controller: controller.confirmPasswordController,
+      obscureText: state.isConfirmPasswordObscured,
       decoration: InputDecoration(
         labelText: 'Confirm Password',
         prefixIcon: const Icon(Icons.lock),
         border: const OutlineInputBorder(),
         suffixIcon: IconButton(
-          onPressed: () =>
-              setState(() => _isConfirmObscured = !_isConfirmObscured),
+          onPressed: controller.toggleConfirmPasswordVisibility,
           icon: Icon(
-            _isConfirmObscured ? Icons.visibility : Icons.visibility_off,
+            state.isConfirmPasswordObscured
+                ? Icons.visibility
+                : Icons.visibility_off,
           ),
         ),
       ),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please confirm your password';
-        }
-        if (value != _passwordController.text) {
-          return 'Passwords do not match';
-        }
-        return null;
-      },
+      validator: controller.validateConfirmPassword,
+      onChanged: (_) => controller.clearError(),
     );
   }
 }

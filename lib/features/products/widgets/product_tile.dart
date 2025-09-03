@@ -1,54 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inventory_management_app/core/constants.dart';
+import 'package:inventory_management_app/features/products/controllers/product_controller.dart';
 import 'package:inventory_management_app/features/products/widgets/product_detail.dart';
 import '../models/product_model.dart';
 
-class ProductTile extends StatefulWidget {
-  const ProductTile({
-    super.key,
-    required this.product,
-    this.isSelected = false,
-    this.onSelectionChanged,
-  });
+class ProductTile extends ConsumerStatefulWidget {
+  const ProductTile({super.key, required this.product});
 
   final ProductModel product;
-  final bool isSelected;
-  final Function(bool)? onSelectionChanged;
 
   @override
-  State<ProductTile> createState() => _ProductTileState();
+  ConsumerState<ProductTile> createState() => _ProductTileState();
 }
 
-class _ProductTileState extends State<ProductTile> {
-  late bool _isSelected;
-
-  @override
-  void initState() {
-    super.initState();
-    _isSelected = widget.isSelected;
-  }
-
-  @override
-  void didUpdateWidget(ProductTile oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.isSelected != widget.isSelected) {
-      _isSelected = widget.isSelected;
-    }
-  }
+class _ProductTileState extends ConsumerState<ProductTile> {
+  bool _isSelected = false;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: _isSelected ? Pallete.primary.withOpacity(0.1) : Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
         border: _isSelected
             ? Border.all(color: Pallete.primary, width: 2)
             : null,
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
-            color: Color(0x11000000),
+            color: Color(0x22000000),
             offset: Offset(0, 2),
             blurRadius: 8,
           ),
@@ -89,12 +70,9 @@ class _ProductTileState extends State<ProductTile> {
       height: 60,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(15),
-        color: _isSelected ? Pallete.primary : Colors.blue,
+        color: Colors.blue,
         // image: DecorationImage(image: Placeholder()),
       ),
-      child: _isSelected
-          ? Icon(Icons.check, color: Colors.white, size: 24)
-          : null,
     );
   }
 
@@ -106,15 +84,15 @@ class _ProductTileState extends State<ProductTile> {
           "Category: ${widget.product.categoryName}",
           style: TextStyle(color: _isSelected ? Pallete.primary : null),
         ),
-        SizedBox(height: 5),
+        const SizedBox(height: 5),
         widget.product.inStock
             ? Container(
-                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
                   color: Pallete.success,
                   borderRadius: BorderRadius.circular(15),
                 ),
-                child: Text(
+                child: const Text(
                   "IN STOCK",
                   style: TextStyle(
                     color: Colors.white,
@@ -123,12 +101,12 @@ class _ProductTileState extends State<ProductTile> {
                 ),
               )
             : Container(
-                padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
                   color: Pallete.info,
                   borderRadius: BorderRadius.circular(15),
                 ),
-                child: Text(
+                child: const Text(
                   "SOLD",
                   style: TextStyle(
                     color: Colors.white,
@@ -142,31 +120,25 @@ class _ProductTileState extends State<ProductTile> {
 
   Widget _selectButton() {
     return AnimatedContainer(
-      duration: Duration(milliseconds: 200),
+      duration: const Duration(milliseconds: 200),
       child: IconButton(
         onPressed: _toggleSelection,
+        iconSize: 34,
         icon: AnimatedSwitcher(
-          duration: Duration(milliseconds: 200),
+          duration: const Duration(milliseconds: 200),
           child: _isSelected
               ? Icon(
                   Icons.check_circle,
-                  key: ValueKey('selected'),
-                  color: Colors.white,
+                  key: const ValueKey('selected'),
+                  color: Pallete.primary,
                 )
               : Icon(
                   Icons.check_circle_outline,
-                  key: ValueKey('unselected'),
+                  key: const ValueKey('unselected'),
                   color: Pallete.primary,
                 ),
         ),
-        style: ButtonStyle(
-          backgroundColor: WidgetStateProperty.all(
-            _isSelected ? Pallete.primary : Pallete.secondary.withAlpha(40),
-          ),
-          foregroundColor: WidgetStateProperty.all(
-            _isSelected ? Colors.white : Pallete.primary,
-          ),
-        ),
+        style: ButtonStyle(padding: WidgetStateProperty.all(EdgeInsets.zero)),
       ),
     );
   }
@@ -175,6 +147,12 @@ class _ProductTileState extends State<ProductTile> {
     setState(() {
       _isSelected = !_isSelected;
     });
-    widget.onSelectionChanged?.call(_isSelected);
+    _isSelected
+        ? ref
+              .read(productControllerProvider.notifier)
+              .selectProduct(widget.product)
+        : ref
+              .read(productControllerProvider.notifier)
+              .unselectProduct(widget.product);
   }
 }

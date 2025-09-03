@@ -14,6 +14,15 @@ class ProductService {
     }
   }
 
+  Future getAllSuppliers() async {
+    try {
+      final Response response = await _dio.get(APIs.allSuppliers);
+      return processResponse(response);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   Future createProduct(Map<String, dynamic> data) async {
     try {
       final Response response = await _dio.post(APIs.createProduct, data: data);
@@ -38,7 +47,7 @@ class ProductService {
     if (response.statusCode != null &&
         response.statusCode! >= 200 &&
         response.statusCode! < 300) {
-      return response.data;
+      return response.data["products"];
     } else {
       throw Exception(
         'Error: ${response.statusCode} - ${response.statusMessage}',

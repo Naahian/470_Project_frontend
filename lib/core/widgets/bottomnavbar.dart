@@ -14,7 +14,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 80,
+      height: 100,
       child: BottomNavigationBar(
         elevation: 2,
         currentIndex: widget.currentIndex,
@@ -53,8 +53,10 @@ void onTap(int index, BuildContext context) {
       context.go("/category");
       break;
     case 3:
+      context.go("/transactions");
       break;
     case 4:
+      context.go("/shipment");
       break;
     default:
       SnackBar(content: Text("something went wrong."));

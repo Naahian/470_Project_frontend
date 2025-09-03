@@ -62,3 +62,12 @@ class CategoryService {
     }
   }
 }
+
+class TestCategoryService extends CategoryService {
+  final Dio mockDio;
+
+  TestCategoryService(this.mockDio);
+
+  @override
+  Dio get _dio => mockDio;
+}

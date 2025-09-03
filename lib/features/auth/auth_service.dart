@@ -1,4 +1,3 @@
-// ignore: depend_on_referenced_packages
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:inventory_management_app/core/constants.dart';
@@ -29,8 +28,10 @@ class AuthService {
 
     try {
       Response response = await dio.post(APIs.register, data: data);
+      // Return null on success, or handle response as needed
+      return null;
     } on DioException catch (e) {
-      return "Registration Failed: ${e.response?.data}";
+      return "Registration Failed: ${e.response?.data ?? e.message}";
     }
   }
 
@@ -39,16 +40,24 @@ class AuthService {
       "username": username,
       "password": password,
     });
+
     try {
       Response response = await dio.post(APIs.login, data: formData);
-      final data = await response.data;
-      storeToken(data["access_token"]);
+      final data = response.data;
+      await storeToken(data["access_token"]);
+      return null; // Success
     } on DioException catch (e) {
-      if (e.response?.statusCode == 401) {
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.connectionError) {
+        return "Network error. Please check your internet connection.";
+      } else if (e.response?.statusCode == 401) {
         return "Wrong Username/Password.";
       } else {
-        return e.response?.data;
+        return e.response?.data?.toString() ?? e.message ?? "Login failed";
       }
+    } catch (e) {
+      return "An unexpected error occurred: ${e.toString()}";
     }
   }
 

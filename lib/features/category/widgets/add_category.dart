@@ -27,6 +27,7 @@ class AddCategorPopup extends StatelessWidget {
               controller: quantityController,
               decoration: const InputDecoration(labelText: 'Quantity'),
             ),
+
             DropdownButtonFormField<String>(
               value: iconController.text.isNotEmpty
                   ? iconController.text

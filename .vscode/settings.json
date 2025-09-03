@@ -1,21 +1,21 @@
 {
     "files.exclude": {
-        ".dart_tool": true,
-        ".idea": true,
-        "android": true,
-        "ios": true,
-        "linux": true,
-        "macos": true,
-        "web": true,
-        "windows": true,
-        "_470_project_frontend.iml": true,
-        ".flutter-plugins-dependencies": true,
-        ".gitignore": true,
-        ".metadata": true,
-        "analysis_options.yaml": true,
-        "pubspec.lock": true,
-        "README.md": true,
-        ".vscode": true,
-        "inventory_management_app.iml": true
+        ".dart_tool": false,
+        ".idea": false,
+        "android": false,
+        "ios": false,
+        "linux": false,
+        "macos": false,
+        "web": false,
+        "windows": false,
+        "_470_project_frontend.iml": false,
+        ".flutter-plugins-dependencies": false,
+        ".gitignore": false,
+        ".metadata": false,
+        "analysis_options.yaml": false,
+        "pubspec.lock": false,
+        "README.md": false,
+        ".vscode": false,
+        "inventory_management_app.iml": false
     }
 }

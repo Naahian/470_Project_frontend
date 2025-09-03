@@ -5,9 +5,14 @@ import 'package:inventory_management_app/features/category/models/category_model
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class CategoryTile extends StatelessWidget {
-  const CategoryTile({super.key, required this.category});
-
+  final bool delivered;
   final CategoryModel category;
+
+  const CategoryTile({
+    super.key,
+    required this.category,
+    required this.delivered,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -24,11 +29,21 @@ class CategoryTile extends StatelessWidget {
           ),
         ],
       ),
-      child: ListTile(
-        leading: _categoryImage(),
-        title: Text(category.name, style: TextStyle(fontSize: 18)),
-        subtitle: _info(),
-        trailing: _deleteButton(),
+      child: Column(
+        children: [
+          ListTile(
+            leading: _categoryImage(),
+            title: Text(category.name, style: TextStyle(fontSize: 18)),
+            subtitle: _info(),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 15, right: 15, bottom: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [_refillButton(), _deleteButton()],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -76,17 +91,22 @@ class CategoryTile extends StatelessWidget {
     );
   }
 
+  OutlinedButton _refillButton() => OutlinedButton(
+    onPressed: delivered ? () {} : null,
+    child: Text("Refill"),
+  );
+
   Widget _deleteButton() {
     return Consumer(
       builder: (context, ref, _) {
-        return IconButton(
+        return TextButton(
           onPressed: () {
             ref
                 .read(categoryControllerProvider.notifier)
                 .deleteCategory(category.id.toString());
           },
-          icon: Icon(Icons.delete_outline),
-          color: Pallete.error,
+          style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
+          child: Text("Delete"),
         );
       },
     );

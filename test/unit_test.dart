@@ -1,46 +1,40 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:inventory_management_app/core/constants.dart';
+import 'package:inventory_management_app/features/category/models/category_service.dart';
+import 'package:inventory_management_app/features/suppliers/models/supplier_service.dart';
 import 'package:mockito/mockito.dart';
 import './unit_test_mock.mocks.dart'; // The file generated above
 
 void main() {
-  late MockFlutterSecureStorage mockStorage;
-
+  late MockDio mockDio;
+  late TestCategoryService categoryService;
+  late TestSupplierService supplierService;
   setUp(() {
-    mockStorage = MockFlutterSecureStorage();
+    mockDio = MockDio();
+    categoryService = TestCategoryService(mockDio);
+    supplierService = TestSupplierService(mockDio);
   });
 
-  test('should store token', () async {
-    // await authService.storeToken('token:adfsadfaw2323');
-    // final result = await authService.getToken();
-    // expect(result, isTrue);
-  });
+  test("CategoryService Test", () async {
+    final mockResponse = Response(
+      requestOptions: RequestOptions(path: APIs.allCategories),
+      statusCode: 200,
+      data: {
+        'success': true,
+        'data': [
+          {'id': 1, 'name': 'Electronics'},
+          {'id': 2, 'name': 'Books'},
+        ],
+      },
+    );
 
-  group('AuthService', () {
-    // test('should return true for valid login', () async {
-    //   final result = await authService.login('validUser', 'validPassword');
-    //   expect(result, isTrue);
-    // });
+    when(mockDio.get(APIs.allCategories)).thenAnswer((_) async => mockResponse);
 
-    // test('should return false for invalid login', () async {
-    //   final result = await authService.login('invalidUser', 'wrongPassword');
-    //   expect(result, isFalse);
-    // });
-
-    // test('should logout successfully', () async {
-    //   await authService.login('validUser', 'validPassword');
-    //   await authService.logout();
-    //   expect(authService.isLoggedIn, isFalse);
-    // });
-
-    // test('should register new user', () async {
-    //   final result = await authService.register('newUser', 'newPassword');
-    //   expect(result, isTrue);
-    // });
-
-    // test('should not register existing user', () async {
-    //   await authService.register('existingUser', 'password');
-    //   final result = await authService.register('existingUser', 'password');
-    //   expect(result, isFalse);
-    // });
+    // Act
+    final result = await categoryService.getAllCategories();
+    print(result);
+    // Assert
+    expect(result, isNotNull);
   });
 }

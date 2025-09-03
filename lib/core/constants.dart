@@ -20,7 +20,7 @@ class APIs {
   // ---------------- Product ----------------
   static String allProducts = "$baseUrl/products";
   static String singleProduct(String id) => "$baseUrl/products/$id";
-  static String createProduct = "$baseUrl/products";
+  static String createProduct = "$baseUrl/products/create";
   static String updateProduct(String id) => "$baseUrl/products/$id";
   static String deleteProduct(String id) => "$baseUrl/products/$id";
 
@@ -36,12 +36,20 @@ class APIs {
   static String updateUser(String id) => "$baseUrl/users/$id";
   static String allUsers = "$baseUrl/users";
   static String singleUser(String id) => "$baseUrl/users/$id";
+
+  // ---------------- Transactions ----------------
+  static String allTransactions = "$baseUrl/transactions/";
+  static String singleTransaction(String id) => "$baseUrl/transactions/$id";
+  static String allSells = "$baseUrl/transactions/";
+  static String createSell = "$baseUrl/transactions/";
+  static String createOrder = "$baseUrl/transactions/";
+  static String makePayment = "$baseUrl/payment/init";
 }
 
 class Pallete {
   static const primary = Colors.deepPurpleAccent;
   static const secondary = Color(0x667C4DFF);
-  static const background = Color(0xFFF3E5F5);
+  static const background = Color(0xFFF3EBF5);
   static const surface = Color(0xFFD1C4E9);
 
   static const error = Color(0xFFFF5252);

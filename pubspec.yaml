@@ -33,8 +33,10 @@ dependencies:
   cupertino_icons: ^1.0.8
   flutter_secure_storage: ^9.2.4
   go_router: ^16.0.0
-  dio: ^5.4.0 
+  dio: ^5.3.3 
   flutter_riverpod: ^2.5.1
+  flutter_sslcommerz: ^2.5.1
+  url_launcher: ^6.2.2
 
 dev_dependencies:
   flutter_test:
