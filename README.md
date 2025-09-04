@@ -1,7 +1,8 @@
 # _470_project_frontend
 
-A new Flutter project.
-
+## Usage
+- download `app-release.apk`
+- install and run.(Android)
 ## Getting Started
 
 This project is a starting point for a Flutter application.
