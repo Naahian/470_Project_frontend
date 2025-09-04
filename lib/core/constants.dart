@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 
 class APIs {
   // static String baseUrl = "http://127.0.0.1:8000"; // dev server
-  static String baseUrl = "http://10.0.2.2:8000"; // emulator dev server
+  // static String baseUrl = "http://10.0.2.2:8000"; // emulator dev server
+  static String baseUrl =
+      "https://four70-project-backend.onrender.com"; // prod server
 
   // ---------------- Auth ----------------
   static String login = "$baseUrl/auth/login";
@@ -41,8 +43,8 @@ class APIs {
   static String allTransactions = "$baseUrl/transactions/";
   static String singleTransaction(String id) => "$baseUrl/transactions/$id";
   static String allSells = "$baseUrl/transactions/";
-  static String createSell = "$baseUrl/transactions/";
-  static String createOrder = "$baseUrl/transactions/";
+  static String createSell = "$baseUrl/transactions/sells/create";
+  static String createOrder = "$baseUrl/transactions/orders/create";
   static String makePayment = "$baseUrl/payment/init";
 }
 

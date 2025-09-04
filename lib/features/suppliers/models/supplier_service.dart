@@ -41,7 +41,7 @@ class SupplierService {
     if (response.statusCode != null &&
         response.statusCode! >= 200 &&
         response.statusCode! < 300) {
-      return response.data;
+      return response.data["suppliers"];
     } else {
       throw Exception(
         'Error: ${response.statusCode} - ${response.statusMessage}',

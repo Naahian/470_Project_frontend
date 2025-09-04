@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:inventory_management_app/features/auth/auth_service.dart';
 import 'package:inventory_management_app/features/auth/screens/screens.dart';
 import 'package:inventory_management_app/features/category/screens/category_screen.dart';
 import 'package:inventory_management_app/features/home/screens/home_screen.dart';
-// ignore: depend_on_referenced_packages
-import 'package:go_router/go_router.dart';
+import 'package:inventory_management_app/features/order/screens/order_screen.dart';
 import 'package:inventory_management_app/features/products/screens/product_screen.dart';
-import 'package:inventory_management_app/features/transaction/model/payment_model.dart';
-import 'package:inventory_management_app/features/transaction/screens/payment_screen.dart';
-import 'package:inventory_management_app/features/transaction/screens/shipment_screen.dart';
+import 'package:inventory_management_app/features/order/models/payment_model.dart';
+import 'package:inventory_management_app/features/order/screens/payment_screen.dart';
 import 'package:inventory_management_app/features/transaction/screens/transaction_screen.dart';
 
 class AppRoutes {
@@ -21,10 +20,11 @@ class AppRoutes {
   static const String products = '/products';
   static const String category = '/category';
   static const String transactions = '/transactions';
-  static const String shipment = '/shipment';
+  static const String order = '/order';
   static const String payment = '/payment';
 
   static final GoRouter router = GoRouter(
+    navigatorKey: navigatorKey, // Add this line
     initialLocation: home,
     redirect: _handleRedirect,
     routes: [
@@ -45,20 +45,23 @@ class AppRoutes {
         builder: (context, state) {
           final orderDetails = state.extra as OrderDetails?;
           if (orderDetails == null) {
-            // Handle null case - redirect to previous screen or show error
+            // Instead of showing error screen, redirect back
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              context.go(order); // or wherever you want to redirect
+            });
             return const Scaffold(
-              body: Center(child: Text('Invalid order details')),
+              body: Center(child: CircularProgressIndicator()),
             );
           }
           return PaymentScreen(orderDetails: orderDetails);
         },
       ),
-      GoRoute(path: shipment, builder: (context, state) => ShipmentScreen()),
+      GoRoute(path: order, builder: (context, state) => OrderScreen()),
     ],
   );
 
   static void navigateToLogin() {
-    navigatorKey.currentContext?.go('/login');
+    router.go(login); // Use router.go instead of context
   }
 
   static Future<String?> _handleRedirect(
@@ -66,31 +69,54 @@ class AppRoutes {
     GoRouterState state,
   ) async {
     try {
-      final isAuth = await AuthService.instance.authenticated();
-      final currentPath = state.path;
+      final currentPath = state.path ?? state.matchedLocation;
 
-      // If user is NOT authenticated and trying to access protected routes
+      // Don't redirect during splash screen or initial loading
+      if (currentPath == null) {
+        return null;
+      }
+
+      final isAuth = await AuthService.instance.authenticated();
+
+      print("Auth status: $isAuth, Current path: $currentPath");
+
+      // If user is NOT authenticated
       if (!isAuth) {
         // Allow access to login and signup pages
         if (currentPath == login || currentPath == signup) {
-          return null; // No redirect needed
+          return null;
         }
-        // Redirect to login for any other page
+        // For initial route (home), redirect to login
+        if (currentPath == home) {
+          print("Redirecting unauthenticated user to login");
+          return login;
+        }
+        // For other protected routes, redirect to login
+        print("Redirecting to login from $currentPath");
         return login;
       }
 
       // If user IS authenticated
       if (isAuth) {
-        // If trying to access auth pages (login/signup), redirect to home
+        print("##### User authenticated! Current path: $currentPath ########");
+        // If trying to access auth pages, redirect to home
         if (currentPath == login || currentPath == signup) {
+          print("Redirecting authenticated user from $currentPath to home");
           return home;
         }
+        // Allow access to all other pages when authenticated
+        return null;
       }
 
-      return null; // No redirect needed
+      return null;
     } catch (e) {
-      // If there's any error, redirect to login for safety
-      return login;
+      print("Redirect error: $e");
+      // Only redirect to login if we're not already on login/signup
+      final currentPath = state.path ?? state.matchedLocation;
+      if (currentPath != login && currentPath != signup) {
+        return login;
+      }
+      return null;
     }
   }
 }

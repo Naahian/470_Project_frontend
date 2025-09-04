@@ -1,6 +1,6 @@
 // Order Summary Card Widget
 import 'package:flutter/material.dart';
-import 'package:inventory_management_app/features/transaction/model/payment_model.dart';
+import 'package:inventory_management_app/features/order/models/payment_model.dart';
 
 class OrderSummaryCard extends StatelessWidget {
   final OrderDetails orderDetails;

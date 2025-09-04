@@ -133,9 +133,9 @@ class _ProductTileState extends ConsumerState<ProductTile> {
                   color: Pallete.primary,
                 )
               : Icon(
-                  Icons.check_circle_outline,
+                  Icons.add_circle_outline_outlined,
                   key: const ValueKey('unselected'),
-                  color: Pallete.primary,
+                  color: Pallete.secondary,
                 ),
         ),
         style: ButtonStyle(padding: WidgetStateProperty.all(EdgeInsets.zero)),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:inventory_management_app/core/constants.dart';
 
 class BottomNavBar extends StatefulWidget {
   final int currentIndex;
@@ -16,6 +17,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
     return SizedBox(
       height: 100,
       child: BottomNavigationBar(
+        selectedItemColor: Pallete.primary,
         elevation: 2,
         currentIndex: widget.currentIndex,
         onTap: (index) => onTap(index, context),
@@ -56,7 +58,7 @@ void onTap(int index, BuildContext context) {
       context.go("/transactions");
       break;
     case 4:
-      context.go("/shipment");
+      context.go("/order");
       break;
     default:
       SnackBar(content: Text("something went wrong."));

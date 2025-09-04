@@ -18,7 +18,7 @@ class TransactionItem extends StatelessWidget {
     return Container(
       margin: EdgeInsets.only(bottom: 15),
       decoration: BoxDecoration(
-        color: Colors.white.withAlpha(100),
+        color: Colors.white.withAlpha(200),
         borderRadius: BorderRadius.circular(15),
         border: BoxBorder.all(color: Pallete.surface),
       ),
@@ -34,8 +34,12 @@ class TransactionItem extends StatelessWidget {
           style: TextStyle(fontSize: 12, color: Colors.grey[500]),
         ),
         trailing: Text(
-          transaction.total_amount,
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          "${transaction.type == "SELL" ? '+' : '-'}${transaction.total_amount}",
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: transaction.type == "SELL" ? Pallete.success : Pallete.error,
+          ),
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       ),

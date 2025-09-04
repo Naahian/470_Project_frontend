@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:inventory_management_app/core/constants.dart';
 import 'package:inventory_management_app/features/auth/controllers/signup_controller.dart';
 
 class SignupScreen extends ConsumerWidget {
@@ -25,62 +26,83 @@ class SignupScreen extends ConsumerWidget {
     });
 
     return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Form(
-            key: signupController.formKey,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SizedBox(height: 40),
-                  const Icon(Icons.person_add, size: 80, color: Colors.blue),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'Create Account',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+      body: Form(
+        key: signupController.formKey,
+        child: SingleChildScrollView(
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: Image.asset("assets/background.png", fit: BoxFit.cover),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 25),
+                margin: const EdgeInsets.only(top: 120),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(30),
+                    topRight: Radius.circular(30),
                   ),
-                  const SizedBox(height: 40),
-                  _buildNameInput(signupController),
-                  const SizedBox(height: 16),
-                  _buildUsernameInput(signupController),
-                  const SizedBox(height: 16),
-                  _buildEmailInput(signupController),
-                  const SizedBox(height: 16),
-                  _buildPasswordInput(signupController, signupState),
-                  const SizedBox(height: 16),
-                  _buildConfirmPasswordInput(signupController, signupState),
-                  const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: signupState.isLoading
-                        ? null
-                        : () async {
-                            final success = await signupController.signup();
-                            if (success && context.mounted) {
-                              context.go('/login');
-                            }
-                          },
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 10,
+                      offset: Offset(0, -4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 40),
+                    const Icon(Icons.person_add, size: 80, color: Colors.blue),
+                    const SizedBox(height: 20),
+                    const Text(
+                      'Create Account',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    child: signupState.isLoading
-                        ? const CircularProgressIndicator()
-                        : const Text('Sign Up', style: TextStyle(fontSize: 16)),
-                  ),
-                  const SizedBox(height: 16),
-                  TextButton(
-                    onPressed: () => context.go('/login'),
-                    child: const Text('Already have an account? Login'),
-                  ),
-                ],
+                    const SizedBox(height: 40),
+                    _buildNameInput(signupController),
+                    const SizedBox(height: 16),
+                    _buildUsernameInput(signupController),
+                    const SizedBox(height: 16),
+                    _buildEmailInput(signupController),
+                    const SizedBox(height: 16),
+                    _buildPasswordInput(signupController, signupState),
+                    const SizedBox(height: 16),
+                    _buildConfirmPasswordInput(signupController, signupState),
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: signupState.isLoading
+                          ? null
+                          : () async {
+                              final success = await signupController.signup();
+                              if (success && context.mounted) {
+                                context.go('/login');
+                              }
+                            },
+                      child: signupState.isLoading
+                          ? const CircularProgressIndicator()
+                          : const Text(
+                              'Sign Up',
+                              style: TextStyle(fontSize: 16),
+                            ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextButton(
+                      onPressed: () => context.go('/login'),
+                      child: const Text('Already have an account? Login'),
+                    ),
+                    const SizedBox(height: 30),
+                  ],
+                ),
               ),
-            ),
+            ],
           ),
         ),
       ),

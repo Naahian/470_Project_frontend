@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:inventory_management_app/core/widgets/bottomnavbar.dart';
-import 'package:inventory_management_app/features/transaction/model/payment_model.dart';
+import 'package:inventory_management_app/features/category/category.dart';
+import 'package:inventory_management_app/features/order/models/payment_model.dart';
+import 'package:inventory_management_app/features/suppliers/controller/supplier_controller.dart';
+import 'package:inventory_management_app/features/transaction/controller/transaction_controller.dart';
 
 // Providers for state management
 final supplierProvider = StateProvider<String?>((ref) => null);
@@ -10,8 +13,8 @@ final productCategoryProvider = StateProvider<String?>((ref) => null);
 final quantityProvider = StateProvider<int>((ref) => 0);
 final selectedTabProvider = StateProvider<int>((ref) => 0);
 
-class ShipmentScreen extends ConsumerWidget {
-  const ShipmentScreen({Key? key}) : super(key: key);
+class OrderScreen extends ConsumerWidget {
+  const OrderScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -19,6 +22,9 @@ class ShipmentScreen extends ConsumerWidget {
     final selectedCategory = ref.watch(productCategoryProvider);
     final quantity = ref.watch(quantityProvider);
     final selectedTab = ref.watch(selectedTabProvider);
+
+    final supplierState = ref.watch(supplierControllerProvider);
+    final categoryState = ref.watch(categoryControllerProvider);
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
@@ -67,20 +73,14 @@ class ShipmentScreen extends ConsumerWidget {
                     onChanged: (value) {
                       ref.read(supplierProvider.notifier).state = value;
                     },
-                    items: const [
-                      DropdownMenuItem(
-                        value: 'Company A',
-                        child: Text('Company A'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'Company B',
-                        child: Text('Company B'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'Company C',
-                        child: Text('Company C'),
-                      ),
-                    ],
+                    items: supplierState.suppliers
+                        .map(
+                          (cat) => DropdownMenuItem(
+                            value: '${cat.id}',
+                            child: Text(cat.name),
+                          ),
+                        )
+                        .toList(),
                   ),
                 ),
               ],
@@ -125,17 +125,14 @@ class ShipmentScreen extends ConsumerWidget {
                     onChanged: (value) {
                       ref.read(productCategoryProvider.notifier).state = value;
                     },
-                    items: const [
-                      DropdownMenuItem(
-                        value: 'Electronics',
-                        child: Text('Electronics'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'Clothing',
-                        child: Text('Clothing'),
-                      ),
-                      DropdownMenuItem(value: 'Food', child: Text('Food')),
-                    ],
+                    items: categoryState.categories
+                        .map(
+                          (cat) => DropdownMenuItem(
+                            value: '${cat.id}',
+                            child: Text(cat.name),
+                          ),
+                        )
+                        .toList(),
                   ),
                 ),
               ],
@@ -183,8 +180,9 @@ class ShipmentScreen extends ConsumerWidget {
             const SizedBox(height: 40),
 
             // Place Order Button
-            FilledButton(
+            ElevatedButton(
               onPressed: () {
+                ref.read(transactionControllerProvider.notifier).createOrder();
                 context.push(
                   "/payment",
                   extra: OrderDetails(
@@ -207,7 +205,9 @@ class ShipmentScreen extends ConsumerWidget {
             OutlinedButton(
               onPressed: () {
                 // Handle add new supplier action
-                _showAddSupplierDialog(context);
+                ref
+                    .read(supplierControllerProvider.notifier)
+                    .fetchAllSuppliers();
               },
               child: const Text(
                 'Add New Supplier',

@@ -1,11 +1,10 @@
 // Payment Form Widget
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:inventory_management_app/features/transaction/controller/payment_controller.dart';
-import 'package:inventory_management_app/features/transaction/model/payment_model.dart';
-import 'package:inventory_management_app/features/transaction/model/transaction_service.dart';
-import 'package:inventory_management_app/features/transaction/widgets/order_card.dart';
-import 'package:inventory_management_app/features/transaction/widgets/payment_gateway.dart';
+import 'package:inventory_management_app/features/order/payment_service.dart';
+import 'package:inventory_management_app/features/order/models/payment_model.dart';
+import 'package:inventory_management_app/features/order/widgets/order_card.dart';
+import 'package:inventory_management_app/features/order/widgets/payment_gateway.dart';
 
 class PaymentFormWidget extends ConsumerStatefulWidget {
   final OrderDetails orderDetails;
@@ -48,11 +47,13 @@ class _PaymentFormWidgetState extends ConsumerState<PaymentFormWidget> {
               addressController: _addressController,
             ),
             const SizedBox(height: 32),
-            ElevatedButton(
-              onPressed: widget.paymentState == PaymentState.loading
-                  ? null
-                  : () => _initiatePayment(),
-              child: Text("Checkout Order"),
+            Center(
+              child: FilledButton(
+                onPressed: widget.paymentState == PaymentState.loading
+                    ? null
+                    : () => _initiatePayment(),
+                child: Text("Checkout Order"),
+              ),
             ),
           ],
         ),
@@ -81,8 +82,7 @@ class _PaymentFormWidgetState extends ConsumerState<PaymentFormWidget> {
     );
 
     try {
-      final transactionService = TransactionService();
-      final response = await transactionService.makePayment(
+      final response = await PaymentService().makePayment(
         paymentRequest.toJson(),
       );
 

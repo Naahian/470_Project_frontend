@@ -67,7 +67,11 @@ class _TransactionDetailState extends ConsumerState<TransactionDetail> {
         '\$${sell.totalAmount.toStringAsFixed(2)}',
       ),
       _buildTile(Icons.inventory, 'Products', '${sell.products.length} items'),
-      _buildTile(Icons.category, 'Type', sell.type.toString().split('.').last),
+      _buildTile(
+        Icons.info_outline,
+        'Type',
+        sell.type.toString().split('.').last,
+      ),
 
       const SizedBox(height: 10),
       if (sell.products.isNotEmpty) _soldItems(sell.products),
@@ -116,7 +120,17 @@ class _TransactionDetailState extends ConsumerState<TransactionDetail> {
         'Quantity',
         '${order.quantity} units',
       ),
-      _buildTile(Icons.category, 'Type', order.type.toString().split('.').last),
+      _buildTile(
+        Icons.category,
+        'Category Id',
+        order.categoryId.toString().split('.').last,
+      ),
+
+      _buildTile(
+        Icons.info_outline,
+        'Type',
+        order.type.toString().split('.').last,
+      ),
       _buildTile(
         Icons.local_shipping,
         'Delivery Status',

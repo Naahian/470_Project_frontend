@@ -50,9 +50,9 @@ class TransactionService {
     }
   }
 
-  Future makePayment(Map<String, dynamic> data) async {
+  Future createMultiSell(Map<String, dynamic> data) async {
     try {
-      final Response response = await _dio.post(APIs.makePayment, data: data);
+      final Response response = await _dio.post(APIs.createSell, data: data);
       return processResponse(response);
     } catch (e) {
       rethrow;

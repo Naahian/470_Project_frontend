@@ -4,6 +4,7 @@ enum TransactionType { ORDER, SELL }
 //1. ORDER MODEL
 class OrderModel {
   final int supplierId;
+  final int categoryId;
   final String paymentId;
   final int quantity;
   final DateTime deliveryDate;
@@ -16,6 +17,7 @@ class OrderModel {
 
   OrderModel({
     required this.supplierId,
+    required this.categoryId,
     required this.paymentId,
     required this.quantity,
     required this.deliveryDate,
@@ -29,6 +31,7 @@ class OrderModel {
 
   OrderModel.withDefaults({
     required this.supplierId,
+    required this.categoryId,
     required this.paymentId,
     required this.deliveryDate,
     required this.id,
@@ -52,6 +55,7 @@ class OrderModel {
       isDelivered: json['is_delivered'] as bool? ?? false,
       totalAmount: (json['total_amount'] as num).toDouble(),
       userId: json['user_id'] as int,
+      categoryId: json['category_id'] as int,
     );
   }
 
@@ -67,12 +71,13 @@ class OrderModel {
       'is_delivered': isDelivered,
       'total_amount': totalAmount,
       'user_id': userId,
+      'category_id': categoryId,
     };
   }
 
   // Helper methods
   static TransactionType _parseTransactionType(String typeString) {
-    switch (typeString.toLowerCase()) {
+    switch (typeString) {
       case 'ORDER':
         return TransactionType.ORDER;
       case 'SELL':

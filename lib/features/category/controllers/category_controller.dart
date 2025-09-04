@@ -1,49 +1,108 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:inventory_management_app/features/category/models/category_model.dart';
 import 'package:dio/dio.dart';
+import 'package:inventory_management_app/features/category/models/category_service.dart';
 import 'category_repo.dart';
 
-class CategoryController
-    extends StateNotifier<AsyncValue<List<CategoryModel>>> {
-  final CategoryRepository repository;
+class CategoryState {
+  final List<CategoryModel> categories;
+  final bool isLoading;
+  final String? error;
+  final bool isRefillable;
 
-  CategoryController(this.repository) : super(const AsyncValue.loading()) {
+  const CategoryState({
+    this.categories = const [],
+    this.isLoading = false,
+    this.error,
+    this.isRefillable = false,
+  });
+
+  CategoryState copyWith({
+    List<CategoryModel>? categories,
+    bool? isLoading,
+    String? error,
+  }) {
+    return CategoryState(
+      categories: categories ?? this.categories,
+      isLoading: isLoading ?? this.isLoading,
+      error: error ?? this.error,
+    );
+  }
+}
+
+class CategoryController extends StateNotifier<CategoryState> {
+  final CategoryService categoryService;
+
+  CategoryController(this.categoryService) : super(const CategoryState()) {
     fetchAllCategories();
   }
 
   Future<void> fetchAllCategories() async {
-    state = const AsyncValue.loading();
+    state = state.copyWith(isLoading: true, error: null);
     try {
-      final categories = await repository.fetchCategories();
-      state = AsyncValue.data(categories);
+      final data = await categoryService.getAllCategories();
+      final categoriesData = data["categories"] as List<dynamic>? ?? [];
+      final categories = categoriesData
+          .map((item) => CategoryModel.fromJson(item))
+          .toList();
+
+      state = state.copyWith(
+        categories: categories,
+        isLoading: false,
+        error: null,
+      );
     } catch (e, st) {
-      state = AsyncValue.error(e, st);
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
   Future<void> addCategory(CategoryModel category) async {
+    state = state.copyWith(isLoading: true, error: null);
     try {
-      await repository.addCategory(category);
+      await categoryService.createCategory(category.toJson());
+      // Refresh the list after adding
       await fetchAllCategories();
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      rethrow;
     }
   }
 
   Future<void> deleteCategory(String id) async {
+    state = state.copyWith(isLoading: true, error: null);
     try {
-      await repository.deleteCategory(id);
-      await fetchAllCategories();
-    } on DioException catch (dioErr, st) {
+      await categoryService.deleteCategory(id);
+      // Remove from local state immediately for better UX
+      state = state.copyWith(
+        categories: state.categories
+            .where((cat) => cat.id != int.parse(id))
+            .toList(),
+        isLoading: false,
+      );
+    } on DioException catch (dioErr) {
       final statusCode = dioErr.response?.statusCode;
-      state = AsyncValue.error("$statusCode", st);
-    } catch (e, st) {
-      state = AsyncValue.error("Unexpected error", st);
+      state = state.copyWith(
+        isLoading: false,
+        error: "Error $statusCode: ${dioErr.message}",
+      );
+      rethrow;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: "Unexpected error: $e");
+      rethrow;
     }
   }
+
+  // Helper method to get category count for home screen
+  int get categoryCount => state.categories.length;
 }
 
+// Provider for CategoryService
+final categoryServiceProvider = Provider<CategoryService>((ref) {
+  return CategoryService();
+});
+
+// Provider for CategoryController
 final categoryControllerProvider =
-    StateNotifierProvider<CategoryController, AsyncValue<List<CategoryModel>>>(
-      (ref) => CategoryController(ref.read(categoryRepositoryProvider)),
+    StateNotifierProvider<CategoryController, CategoryState>(
+      (ref) => CategoryController(ref.read(categoryServiceProvider)),
     );

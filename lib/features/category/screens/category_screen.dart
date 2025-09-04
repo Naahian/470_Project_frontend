@@ -29,11 +29,9 @@ class CategoryScreen extends ConsumerWidget {
             _bgIcon2(),
             Padding(
               padding: const EdgeInsets.all(25),
-              child: categoryState.when(
-                data: _buildCategories,
-                loading: _buildLoaing,
-                error: (err, st) => Center(child: Text("ERROR: ${err}")),
-              ),
+              child: categoryState.isLoading
+                  ? _buildLoaing()
+                  : _buildCategories(categoryState.categories),
             ),
           ],
         ),

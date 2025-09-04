@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:inventory_management_app/features/transaction/controller/payment_controller.dart';
-import 'package:inventory_management_app/features/transaction/model/payment_model.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:inventory_management_app/features/order/models/payment_model.dart';
+import 'package:inventory_management_app/features/order/payment_service.dart';
 
 import '../widgets/widgets.dart';
+
+// Payment state provider
 
 class PaymentScreen extends ConsumerWidget {
   final OrderDetails orderDetails;
@@ -17,25 +18,18 @@ class PaymentScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      appBar: _buildAppBar(context, ref),
+      appBar: _buildAppBar(context),
       body: _buildBody(context, ref, paymentState),
     );
   }
 
-  PreferredSizeWidget _buildAppBar(BuildContext context, WidgetRef ref) {
+  PreferredSizeWidget _buildAppBar(BuildContext context) {
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 0,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back, color: Colors.black),
-        onPressed: () {
-          // Show confirmation dialog if payment is in progress
-          if (ref.read(paymentStateProvider) == PaymentState.gateway) {
-            _showCancelConfirmationDialog(context, ref);
-          } else {
-            Navigator.of(context).pop();
-          }
-        },
+        onPressed: () => Navigator.of(context).pop(),
       ),
       centerTitle: true,
       title: const Text(
@@ -56,11 +50,11 @@ class PaymentScreen extends ConsumerWidget {
   ) {
     switch (paymentState) {
       case PaymentState.gateway:
-        return PaymentGatewayWidget();
+        return const PaymentGatewayWidget();
       case PaymentState.success:
         return PaymentResultWidget(
           isSuccess: true,
-          onContinue: () => Navigator.of(context).pop(),
+          onContinue: () => onContinue(context, ref),
         );
       case PaymentState.failed:
         return PaymentResultWidget(
@@ -76,30 +70,8 @@ class PaymentScreen extends ConsumerWidget {
     }
   }
 
-  void _showCancelConfirmationDialog(BuildContext context, WidgetRef ref) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Cancel Payment?'),
-          content: const Text('Are you sure you want to cancel this payment?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('No'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                ref.read(paymentStateProvider.notifier).state =
-                    PaymentState.initial;
-                Navigator.of(context).pop();
-              },
-              child: const Text('Yes'),
-            ),
-          ],
-        );
-      },
-    );
+  void onContinue(BuildContext context, WidgetRef ref) {
+    ref.read(paymentStateProvider.notifier).state = PaymentState.initial;
+    Navigator.of(context).pop();
   }
 }

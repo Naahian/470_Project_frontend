@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:inventory_management_app/core/constants.dart';
 import 'package:inventory_management_app/core/widgets/bottomnavbar.dart';
 import 'package:inventory_management_app/features/products/controllers/product_controller.dart';
+import 'package:inventory_management_app/features/transaction/controller/transaction_controller.dart';
+import 'package:inventory_management_app/features/transaction/screens/sellproduct_screen.dart';
 import '../models/product_model.dart';
 import '../widgets/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -46,7 +49,7 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
 
     return Scaffold(
       bottomNavigationBar: const BottomNavBar(currentIndex: 1),
-      floatingActionButton: _floatingAddButtons(context, controller),
+      floatingActionButton: _floatingAddButtons(context, controller, state),
       appBar: _buildAppbar(),
       body: DecoratedBox(
         decoration: BoxDecoration(
@@ -93,13 +96,22 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
   Widget _floatingAddButtons(
     BuildContext context,
     ProductController controller,
+    ProductState state,
   ) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         FilledButton(
-          onPressed: () {},
+          onPressed: () {
+            ref
+                .read(transactionControllerProvider.notifier)
+                .updateSelectedProduct(state.selectedProducts);
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => SellproductScreen()),
+            );
+          },
           style: FilledButton.styleFrom(
             backgroundColor: Pallete.primary,
             shape: RoundedRectangleBorder(
